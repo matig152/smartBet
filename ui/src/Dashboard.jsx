@@ -46,7 +46,7 @@ export default function SportsBettingDashboard() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-goog-api-key": "AIzaSyDPGfqWQt75pKwUl5CjE99MToTZcUwgK6c" // <-- Wklej tutaj swój klucz API
+        "X-goog-api-key": "" // <-- Wklej tutaj swój klucz API
       },
       body: JSON.stringify({
         contents: [
