@@ -273,58 +273,83 @@ const handleSendAiMessage = () => {
             {matches
               .filter(m => activeTab === 'all' || m.flag === activeTab)
               .map(match => (
-                <div key={match.id} style={{ backgroundColor: '#1f2937', padding: '16px', borderRadius: '8px', border: '1px solid #374151' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', backgroundColor: '#374151', padding: '4px 8px', borderRadius: '4px' }}>{match.league}</span>
-                    {match.is_live ? (
-                      <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <RefreshCw size={12} /> LIVE (Auto-refresh 1m)
-                      </span>
-                    ) : null}
-                  </div>
+                <React.Fragment key={match.id}>
+                  <div style={{ backgroundColor: '#1f2937', padding: '16px', borderRadius: '8px', border: '1px solid #374151' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12px', backgroundColor: '#374151', padding: '4px 8px', borderRadius: '4px' }}>{match.league}</span>
+                      {match.is_live ? (
+                        <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <RefreshCw size={12} /> LIVE (Auto-refresh 1m)
+                        </span>
+                      ) : null}
+                    </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h3 style={{ margin: 0, fontSize: '18px' }}>{match.home} vs {match.away}</h3>
-                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '12px', color: '#9ca3af' }}>
-                        <div>Forma {match.home}: {match.last5_home?.join('-') || 'Brak'}</div>
-                        <div>Forma {match.away}: {match.last5_away?.join('-') || 'Brak'}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '18px' }}>{match.home} vs {match.away}</h3>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '12px', color: '#9ca3af' }}>
+                          <div>Forma {match.home}: {match.last5_home?.join('-') || 'Brak'}</div>
+                          <div>Forma {match.away}: {match.last5_away?.join('-') || 'Brak'}</div>
+                        </div>
+                      </div>
+
+                      {/* PRZYCISKI FLAGOWANIA Z SYNCHRONIZACJĄ SQLITE */}
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={() => handleFlagChange(match.id, match.flag === 'intel' ? 'all' : 'intel')} title="Interesujące" style={{ background: match.flag === 'intel' ? '#eab308' : '#374151', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', color: '#fff' }}><Flag size={14} /></button>
+                        <button onClick={() => handleFlagChange(match.id, match.flag === 'potential' ? 'all' : 'potential')} title="Rozważam" style={{ background: match.flag === 'potential' ? '#3b82f6' : '#374151', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', color: '#fff' }}><Flag size={14} /></button>
+                        <button onClick={() => handleFlagChange(match.id, match.flag === 'trash' ? 'all' : 'trash')} title="Nie interesuje mnie" style={{ background: match.flag === 'trash' ? '#ef4444' : '#374151', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', color: '#fff' }}><Flag size={14} /></button>
                       </div>
                     </div>
 
-                    {/* PRZYCISKI FLAGOWANIA Z SYNCHRONIZACJĄ SQLITE */}
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <button onClick={() => handleFlagChange(match.id, match.flag === 'intel' ? 'all' : 'intel')} title="Interesujące" style={{ background: match.flag === 'intel' ? '#eab308' : '#374151', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', color: '#fff' }}><Flag size={14} /></button>
-                      <button onClick={() => handleFlagChange(match.id, match.flag === 'potential' ? 'all' : 'potential')} title="Rozważam" style={{ background: match.flag === 'potential' ? '#3b82f6' : '#374151', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', color: '#fff' }}><Flag size={14} /></button>
-                      <button onClick={() => handleFlagChange(match.id, match.flag === 'trash' ? 'all' : 'trash')} title="Nie interesuje mnie" style={{ background: match.flag === 'trash' ? '#ef4444' : '#374151', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', color: '#fff' }}><Flag size={14} /></button>
+                    {/* DYNAMICZNE KURSY */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '16px' }}>
+                      <div onClick={() => checkRiskMitigation(match)} style={{ backgroundColor: '#2d3748', padding: '10px', borderRadius: '6px', cursor: 'pointer', textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#9ca3af' }}>1 ({match.bookmaker})</div>
+                        <div style={{ fontSize: '16px', fontWeight: 'bold', color: match.colorBlue ? '#60a5fa' : '#fff' }}>{match.current_odds?.win1}</div>
+                      </div>
+                      <div style={{ backgroundColor: '#2d3748', padding: '10px', borderRadius: '6px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#9ca3af' }}>X</div>
+                        <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{match.current_odds?.draw}</div>
+                      </div>
+                      <div style={{ backgroundColor: '#2d3748', padding: '10px', borderRadius: '6px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#9ca3af' }}>2</div>
+                        <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{match.current_odds?.win2}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                      <button onClick={() => setSelectedMatch(match)} style={{ flex: 1, backgroundColor: '#4b5563', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}>
+                        Wyświetl specyficzne kupony (faule itp.)
+                      </button>
+                      <button onClick={() => handleBetClick(match.url)} style={{ backgroundColor: '#10b981', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        Przejdź na stronę <ExternalLink size={14} />
+                      </button>
                     </div>
                   </div>
 
-                  {/* DYNAMICZNE KURSY */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '16px' }}>
-                    <div onClick={() => checkRiskMitigation(match)} style={{ backgroundColor: '#2d3748', padding: '10px', borderRadius: '6px', cursor: 'pointer', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: '#9ca3af' }}>1 ({match.bookmaker})</div>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: match.colorBlue ? '#60a5fa' : '#fff' }}>{match.current_odds?.win1}</div>
+                  {/* WIDOK SZCZEGÓŁOWY (FAULE/KARTKI) - Appears right after selected match */}
+                  {selectedMatch && selectedMatch.id === match.id && (
+                    <div style={{ backgroundColor: '#1f2937', padding: '20px', borderRadius: '8px', border: '1px solid #3b82f6' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <h3>Specyficzne oferty dla meczu: {selectedMatch.home} - {selectedMatch.away}</h3>
+                        <button onClick={() => setSelectedMatch(null)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>Zamknij</button>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {[
+                          { name: "Liczba fauli powyżej 21.5", odd: 1.85, bookmaker: selectedMatch.bookmaker },
+                          { name: "Żółte kartki powyżej 3.5", odd: 1.65, bookmaker: selectedMatch.bookmaker }
+                        ].map((spec, idx) => (
+                          <div key={idx} style={{ backgroundColor: '#2d3748', padding: '12px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>{spec.name} <strong>({spec.bookmaker})</strong></span>
+                            <button onClick={() => handleBetClick(selectedMatch.url)} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>
+                              Kurs {spec.odd} | Postaw kupon
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div style={{ backgroundColor: '#2d3748', padding: '10px', borderRadius: '6px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: '#9ca3af' }}>X</div>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{match.current_odds?.draw}</div>
-                    </div>
-                    <div style={{ backgroundColor: '#2d3748', padding: '10px', borderRadius: '6px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: '#9ca3af' }}>2</div>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{match.current_odds?.win2}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                    <button onClick={() => setSelectedMatch(match)} style={{ flex: 1, backgroundColor: '#4b5563', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}>
-                      Wyświetl specyficzne kupony (faule itp.)
-                    </button>
-                    <button onClick={() => handleBetClick(match.url)} style={{ backgroundColor: '#10b981', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      Przejdź na stronę <ExternalLink size={14} />
-                    </button>
-                  </div>
-                </div>
+                  )}
+                </React.Fragment>
             ))}
           </div>
 
@@ -334,29 +359,6 @@ const handleSendAiMessage = () => {
               <h4 style={{ margin: '0 0 8px 0', color: '#34d399' }}>Sugestia optymalizacji ryzyka od systemu</h4>
               <p style={{ fontSize: '14px' }}>Zamiast czystego typu wybierz alternatywę: <strong style={{ color: '#34d399' }}>{riskSuggestion.alternative}</strong></p>
               <span style={{ fontSize: '12px', color: '#a7f3d0' }}>{riskSuggestion.desc}</span>
-            </div>
-          )}
-
-          {/* WIDOK SZCZEGÓŁOWY (FAULE/KARTKI) */}
-          {selectedMatch && (
-            <div style={{ backgroundColor: '#1f2937', padding: '20px', borderRadius: '8px', marginTop: '24px', border: '1px solid #3b82f6' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <h3>Specyficzne oferty dla meczu: {selectedMatch.home} - {selectedMatch.away}</h3>
-                <button onClick={() => setSelectedMatch(null)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>Zamknij</button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  { name: "Liczba fauli powyżej 21.5", odd: 1.85, bookmaker: selectedMatch.bookmaker },
-                  { name: "Żółte kartki powyżej 3.5", odd: 1.65, bookmaker: selectedMatch.bookmaker }
-                ].map((spec, idx) => (
-                  <div key={idx} style={{ backgroundColor: '#2d3748', padding: '12px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>{spec.name} <strong>({spec.bookmaker})</strong></span>
-                    <button onClick={() => handleBetClick(selectedMatch.url)} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>
-                      Kurs {spec.odd} | Postaw kupon
-                    </button>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </div>
